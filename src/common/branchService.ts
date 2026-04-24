@@ -50,3 +50,24 @@ export function filterUserBranches(
     .filter(b => isBranchOwnedByUser(b, userUniqueName))
     .map(b => toBranchInfo(b, repository, projectName));
 }
+
+export function formatTimeAgo(date: Date, now: Date = new Date()): string {
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return '1 week ago';
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 60) return '1 month ago';
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+  if (diffDays < 730) return '1 year ago';
+  return `${Math.floor(diffDays / 365)} years ago`;
+}
+
+// A branch is considered stale when its last commit is older than thresholdDays.
+export function isStale(date: Date | undefined, now: Date = new Date(), thresholdDays = 30): boolean {
+  if (!date) return false;
+  return (now.getTime() - date.getTime()) > thresholdDays * 24 * 60 * 60 * 1000;
+}
