@@ -34,6 +34,30 @@ An `ANTHROPIC_API_KEY` secret is expected in the environment (configured via the
 | `npm run test:coverage` | Run tests with coverage report |
 | `npm run package` | Build + create `.vsix` via `tfx` |
 
+## Versioning
+
+The extension version is calculated automatically by the CI workflow — do not edit the `version` field in `vss-extension.json` by hand.
+
+### Scheme
+
+```
+<major>.<minor>.<patch>
+```
+
+- **major.minor** — taken from the most recent git tag (e.g. `v1.2` or `1.2`). Tags must be in `X.Y` format.
+- **patch** — number of commits since that tag. If no tag exists, major.minor defaults to `0.1` and patch is the total commit count.
+
+### Bumping major or minor
+
+Create a new tag on the commit that should start the new version:
+
+```
+git tag v1.0
+git push origin v1.0
+```
+
+The next CI run will produce `1.0.<commits-since-tag>`.
+
 ## Git Commit Messages
 
 Write commit messages in the imperative mood — phrase the subject as a command, as if completing the sentence "If applied, this commit will…":

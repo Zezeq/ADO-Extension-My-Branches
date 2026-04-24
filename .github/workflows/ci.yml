@@ -14,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -26,6 +28,23 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Calculate version
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            MAJOR_MINOR="0.1"
+            PATCH=$(git rev-list HEAD --count)
+          else
+            MAJOR_MINOR=$(echo "$LAST_TAG" | sed 's/^v//' | cut -d. -f1,2)
+            PATCH=$(git rev-list "${LAST_TAG}..HEAD" --count)
+          fi
+          VERSION="${MAJOR_MINOR}.${PATCH}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Calculated version: $VERSION"
+
+      - name: Set version in manifest
+        run: jq ".version = \"$VERSION\"" vss-extension.json > tmp.json && mv tmp.json vss-extension.json
+
       - name: Build
         run: npm run build
 
@@ -35,6 +54,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my-branches
+          name: my-branches-${{ env.VERSION }}
           path: '*.vsix'
           if-no-files-found: error
