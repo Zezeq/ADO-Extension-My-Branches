@@ -11,15 +11,29 @@
   "demands": ["api-version/5.1"],
   "scopes": ["vso.code"],
   "targets": [
-    { "id": "Microsoft.VisualStudio.Services" },
-    { "id": "Microsoft.TeamFoundation.Server" }
+    { "id": "Microsoft.VisualStudio.Services" }
   ],
+  "icons": {
+    "default": "images/logo.png"
+  },
   "content": {
     "details": {
       "path": "overview.md"
     },
     "license": {
       "path": "LICENSE"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "uri": "https://github.com/Zezeq/ADO-Extension-My-Branches"
+  },
+  "links": {
+    "support": {
+      "uri": "https://github.com/Zezeq/ADO-Extension-My-Branches/issues"
+    },
+    "issues": {
+      "uri": "https://github.com/Zezeq/ADO-Extension-My-Branches/issues"
     }
   },
   "contributions": [
@@ -49,6 +63,10 @@
   "files": [
     {
       "path": "dist",
+      "addressable": true
+    },
+    {
+      "path": "images",
       "addressable": true
     }
   ]
