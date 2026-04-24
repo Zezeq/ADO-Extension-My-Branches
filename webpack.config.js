@@ -10,6 +10,9 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
+  externals: {
+    'azure-devops-extension-sdk': 'SDK',
+  },
   resolve: {
     extensions: ['.ts', '.js'],
   },
