@@ -40,6 +40,30 @@ export function toBranchInfo(branch: BranchRef, repository: Repository, projectN
   };
 }
 
+import type { BranchDetail } from './gitService';
+
+export type SortColumn = 'name' | 'repositoryName' | 'projectName' | 'lastCommitDate';
+export type SortDirection = 'asc' | 'desc';
+
+export function sortBranches(
+  branches: BranchDetail[],
+  column: SortColumn,
+  direction: SortDirection
+): BranchDetail[] {
+  return [...branches].sort((a, b) => {
+    let cmp: number;
+    if (column === 'lastCommitDate') {
+      cmp = (a.lastCommitDate?.getTime() ?? 0) - (b.lastCommitDate?.getTime() ?? 0);
+    } else {
+      cmp = a[column].localeCompare(b[column]);
+    }
+    if (cmp === 0 && column !== 'name') {
+      cmp = a.name.localeCompare(b.name);
+    }
+    return direction === 'asc' ? cmp : -cmp;
+  });
+}
+
 export function filterUserBranches(
   branches: BranchRef[],
   repository: Repository,

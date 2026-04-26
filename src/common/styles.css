@@ -63,6 +63,23 @@ body {
   white-space: nowrap;
 }
 
+.mb-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.mb-sortable:hover {
+  color: #0078d4;
+}
+
+.mb-sortable[data-sort="asc"]::after {
+  content: ' ▲';
+}
+
+.mb-sortable[data-sort="desc"]::after {
+  content: ' ▼';
+}
+
 .mb-table tbody td {
   padding: 10px 12px;
   border-bottom: 1px solid #f3f2f1;

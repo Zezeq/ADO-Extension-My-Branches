@@ -5,9 +5,11 @@ import {
   shortBranchName,
   formatTimeAgo,
   isStale,
+  sortBranches,
   BranchRef,
   Repository,
 } from '../../src/common/branchService';
+import type { BranchDetail } from '../../src/common/gitService';
 
 const repo: Repository = { id: 'repo-1', name: 'my-repo' };
 
@@ -120,6 +122,92 @@ describe('formatTimeAgo', () => {
 
   it('returns "N years ago" for 730+ days', () => {
     expect(formatTimeAgo(new Date('2022-01-01T12:00:00Z'), NOW)).toBe('2 years ago');
+  });
+});
+
+function makeDetail(
+  name: string,
+  repositoryName: string,
+  projectName: string,
+  lastCommitDate?: Date
+): BranchDetail {
+  return { name, repositoryId: 'id', repositoryName, projectName, lastCommitDate };
+}
+
+describe('sortBranches', () => {
+  const old = new Date('2023-01-01');
+  const mid = new Date('2024-01-01');
+  const recent = new Date('2025-01-01');
+
+  const branches: BranchDetail[] = [
+    makeDetail('beta', 'repo-b', 'proj-b', mid),
+    makeDetail('alpha', 'repo-a', 'proj-a', recent),
+    makeDetail('gamma', 'repo-a', 'proj-a', old),
+  ];
+
+  it('sorts by date ascending (oldest first) by default', () => {
+    const result = sortBranches(branches, 'lastCommitDate', 'asc');
+    expect(result.map(b => b.name)).toEqual(['gamma', 'beta', 'alpha']);
+  });
+
+  it('sorts by date descending (newest first)', () => {
+    const result = sortBranches(branches, 'lastCommitDate', 'desc');
+    expect(result.map(b => b.name)).toEqual(['alpha', 'beta', 'gamma']);
+  });
+
+  it('sorts by name ascending', () => {
+    const result = sortBranches(branches, 'name', 'asc');
+    expect(result.map(b => b.name)).toEqual(['alpha', 'beta', 'gamma']);
+  });
+
+  it('sorts by name descending', () => {
+    const result = sortBranches(branches, 'name', 'desc');
+    expect(result.map(b => b.name)).toEqual(['gamma', 'beta', 'alpha']);
+  });
+
+  it('sorts by repositoryName ascending', () => {
+    const result = sortBranches(branches, 'repositoryName', 'asc');
+    expect(result.map(b => b.repositoryName)).toEqual(['repo-a', 'repo-a', 'repo-b']);
+  });
+
+  it('sorts by projectName descending', () => {
+    const result = sortBranches(branches, 'projectName', 'desc');
+    expect(result.map(b => b.projectName)).toEqual(['proj-b', 'proj-a', 'proj-a']);
+  });
+
+  it('uses name as tiebreaker when dates are equal', () => {
+    const tied = [
+      makeDetail('charlie', 'repo', 'proj', mid),
+      makeDetail('alice', 'repo', 'proj', mid),
+      makeDetail('bob', 'repo', 'proj', mid),
+    ];
+    const result = sortBranches(tied, 'lastCommitDate', 'asc');
+    expect(result.map(b => b.name)).toEqual(['alice', 'bob', 'charlie']);
+  });
+
+  it('uses name as tiebreaker when repo names are equal', () => {
+    const tied = [
+      makeDetail('charlie', 'same-repo', 'proj', mid),
+      makeDetail('alice', 'same-repo', 'proj', recent),
+      makeDetail('bob', 'same-repo', 'proj', old),
+    ];
+    const result = sortBranches(tied, 'repositoryName', 'asc');
+    expect(result.map(b => b.name)).toEqual(['alice', 'bob', 'charlie']);
+  });
+
+  it('treats undefined lastCommitDate as epoch (sorts before any real date)', () => {
+    const withUndefined = [
+      makeDetail('b', 'repo', 'proj', mid),
+      makeDetail('a', 'repo', 'proj', undefined),
+    ];
+    const result = sortBranches(withUndefined, 'lastCommitDate', 'asc');
+    expect(result.map(b => b.name)).toEqual(['a', 'b']);
+  });
+
+  it('does not mutate the original array', () => {
+    const original = [...branches];
+    sortBranches(branches, 'name', 'desc');
+    expect(branches).toEqual(original);
   });
 });
 

@@ -3,16 +3,25 @@ import { getClient } from 'azure-devops-extension-api';
 import { GitRestClient } from 'azure-devops-extension-api/Git';
 import type { ILocationService, IHostNavigationService } from 'azure-devops-extension-api/Common/CommonServices';
 import { getUserBranchesInProject, BranchDetail } from '../common/gitService';
-import { formatTimeAgo, isStale } from '../common/branchService';
+import { formatTimeAgo, isStale, sortBranches, SortColumn, SortDirection } from '../common/branchService';
 import { escapeHtml, attachRowClickHandlers } from '../common/domUtils';
 import { branchUrl, repoBranchesUrl } from '../common/urlUtils';
 import '../common/styles.css';
 
-function renderTable(branches: BranchDetail[], collectionUri: string): string {
+interface SortState {
+  column: SortColumn;
+  direction: SortDirection;
+}
+
+function sortableHeader(label: string, column: SortColumn, sort: SortState): string {
+  const sortAttr = sort.column === column ? sort.direction : '';
+  return `<th class="mb-sortable" data-column="${column}" data-sort="${sortAttr}">${label}</th>`;
+}
+
+function renderTable(branches: BranchDetail[], collectionUri: string, sort: SortState): string {
   const now = new Date();
 
   const rows = branches
-    .sort((a, b) => (b.lastCommitDate?.getTime() ?? 0) - (a.lastCommitDate?.getTime() ?? 0))
     .map(b => {
       const stale = isStale(b.lastCommitDate, now);
       const updated = b.lastCommitDate ? formatTimeAgo(b.lastCommitDate, now) : '—';
@@ -35,9 +44,9 @@ function renderTable(branches: BranchDetail[], collectionUri: string): string {
     <table class="mb-table">
       <thead>
         <tr>
-          <th>Branch</th>
-          <th>Repository</th>
-          <th>Last updated</th>
+          ${sortableHeader('Branch', 'name', sort)}
+          ${sortableHeader('Repository', 'repositoryName', sort)}
+          ${sortableHeader('Last updated', 'lastCommitDate', sort)}
         </tr>
       </thead>
       <tbody>${rows}</tbody>
@@ -68,11 +77,26 @@ async function init(): Promise<void> {
 
     if (branches.length === 0) {
       container.innerHTML = '<div class="mb-empty">You have no branches in this project.</div>';
-    } else {
-      container.innerHTML = renderTable(branches, collectionUri);
-      const navigationService = await SDK.getService<IHostNavigationService>('ms.vss-features.host-navigation-service');
-      attachRowClickHandlers(container, url => navigationService.navigate(url));
+      return;
     }
+
+    const navigationService = await SDK.getService<IHostNavigationService>('ms.vss-features.host-navigation-service');
+    const sort: SortState = { column: 'lastCommitDate', direction: 'asc' };
+
+    function render(): void {
+      container.innerHTML = renderTable(sortBranches(branches, sort.column, sort.direction), collectionUri, sort);
+      attachRowClickHandlers(container, url => navigationService.navigate(url));
+      container.querySelectorAll<HTMLElement>('.mb-sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const column = th.dataset.column as SortColumn;
+          sort.direction = sort.column === column && sort.direction === 'asc' ? 'desc' : 'asc';
+          sort.column = column;
+          render();
+        });
+      });
+    }
+
+    render();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     container.innerHTML = `<div class="mb-error">Failed to load branches: ${escapeHtml(message)}</div>`;
