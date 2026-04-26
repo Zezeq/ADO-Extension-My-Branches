@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "my-branches",
   "name": "My Branches",
-  "version": "0.1.12.1",
+  "version": "0.1.0",
   "publisher": "CrazySolutions",
   "description": "Shows all branches created by the logged-in user across the organization and within each project's repositories.",
   "public": false,
@@ -69,11 +69,6 @@
     {
       "path": "images",
       "addressable": true
-    },
-    {
-      "path": "node_modules/azure-devops-extension-sdk/SDK.min.js",
-      "addressable": true,
-      "packagePath": "lib/SDK.min.js"
     }
   ]
 }

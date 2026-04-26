@@ -10,11 +10,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
-  externals: {
-    'azure-devops-extension-sdk': 'SDK',
-  },
   resolve: {
     extensions: ['.ts', '.js'],
+    alias: {
+      'azure-devops-extension-sdk': path.resolve(__dirname, 'node_modules/azure-devops-extension-sdk/esm/SDK.min.js'),
+    },
   },
   module: {
     rules: [
