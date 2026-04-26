@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "my-branches",
   "name": "My Branches",
-  "version": "0.1.0",
+  "version": "0.1.12.1",
   "publisher": "CrazySolutions",
   "description": "Shows all branches created by the logged-in user across the organization and within each project's repositories.",
   "public": false,
@@ -39,14 +39,13 @@
   "contributions": [
     {
       "id": "org-hub",
-      "type": "ms.vss-web.hub",
+      "type": "ms.vss-web.tab",
       "description": "My Branches at the organization/collection level",
-      "targets": ["ms.vss-web.collection-overview-hub-group"],
+      "targets": ["ms.vss-tfs-web.suite-home-pivots"],
       "properties": {
         "name": "My Branches",
         "order": 100,
-        "uri": "dist/org-hub/index.html",
-        "icon": "images/hub-icon.png"
+        "uri": "dist/org-hub/index.html"
       }
     },
     {
