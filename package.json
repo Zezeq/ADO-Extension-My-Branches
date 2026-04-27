@@ -12,11 +12,16 @@
   },
   "dependencies": {
     "azure-devops-extension-api": "^4.0.3",
-    "azure-devops-extension-sdk": "^4.0.2"
+    "azure-devops-extension-sdk": "^4.0.2",
+    "azure-devops-ui": "^2.272.0",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^25.6.0",
+    "@types/react": "^16.14.69",
+    "@types/react-dom": "^16.9.25",
     "css-loader": "^7.1.1",
     "html-webpack-plugin": "^5.6.0",
     "jest": "^30.3.0",
