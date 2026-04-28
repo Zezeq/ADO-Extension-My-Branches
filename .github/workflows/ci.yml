@@ -36,12 +36,16 @@ jobs:
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST_TAG" ]; then
             MAJOR_MINOR="0.1"
-            PATCH=$(git rev-list HEAD --count)
+            PATCH=$(git rev-list origin/main --count)
           else
             MAJOR_MINOR=$(echo "$LAST_TAG" | sed 's/^v//' | cut -d. -f1,2)
-            PATCH=$(git rev-list "${LAST_TAG}..HEAD" --count)
+            PATCH=$(git rev-list "${LAST_TAG}..origin/main" --count)
           fi
-          VERSION="${MAJOR_MINOR}.${PATCH}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            VERSION="${MAJOR_MINOR}.${PATCH}.${{ github.run_number }}"
+          else
+            VERSION="${MAJOR_MINOR}.${PATCH}"
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Calculated version: $VERSION"
 
