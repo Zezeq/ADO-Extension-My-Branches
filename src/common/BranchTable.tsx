@@ -56,9 +56,8 @@ const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
 // 48px covers header cell padding (22px) + sort icon (~20px) + margin of safety.
 const COLUMN_EXTRA_WIDTH = 48;
-const MAX_COLUMN_WIDTH = 300;
 
-function contentColumnWidth(header: string, values: string[], maxWidth = MAX_COLUMN_WIDTH): number {
+function contentColumnWidth(header: string, values: string[]): number {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) return 120;
@@ -67,7 +66,7 @@ function contentColumnWidth(header: string, values: string[], maxWidth = MAX_COL
   const maxTextWidth = values.length > 0
     ? Math.max(measure(header), ...values.map(measure))
     : measure(header);
-  return Math.min(Math.ceil(maxTextWidth) + COLUMN_EXTRA_WIDTH, maxWidth);
+  return Math.ceil(maxTextWidth) + COLUMN_EXTRA_WIDTH;
 }
 
 export function BranchTable({ branches, collectionUri, showProjectColumn, onNavigate }: BranchTableProps): JSX.Element {
@@ -97,7 +96,7 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
   const now = useMemo(() => new Date(), []);
 
   const branchWidth = useMemo(
-    () => contentColumnWidth('Branch', branches.map(b => b.name), 800),
+    () => contentColumnWidth('Branch', branches.map(b => b.name)),
     [branches]
   );
   const repoWidth = useMemo(
