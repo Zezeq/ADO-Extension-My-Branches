@@ -1,30 +1,44 @@
 # My Branches
 
-Quickly find the branches you created — without scrolling through every branch in the repository.
+Quickly find the branches you created — without scrolling through every branch in every repository.
+
+## What you get
+
+After installing, two new **My Branches** tabs appear automatically in your Azure DevOps interface — no configuration required.
+
+### Organisation / collection view
+
+A tab on your organisation or collection start page lists **all branches you created across every project and repository** you have access to. Each row shows:
+
+- **Branch name** — links directly to the branch in Azure Repos.
+- **Repository** — links to the branch list for that repository.
+- **Project** — links to the project home page.
+- **Last updated** — human-readable time since the last commit (e.g. "3 days ago", "2 months ago"). Branches with no activity in over 30 days are highlighted in red so stale work is easy to spot.
+
+### Project / Repos view
+
+A tab under **Repos** inside each project shows the same information scoped to that project only — useful when you want to stay focused on the work at hand.
 
 ## Features
 
-- **Organisation view** — a dedicated tab on the organisation/collection start page lists all your branches across every project and repository you have access to.
-- **Repository view** — a dedicated tab under Repos inside each project lists your branches for that project only, giving you the focused context you need while working.
-- **Accurate ownership** — branch ownership is based on who pushed the branch into existence, not who made the latest commit.
-- **Cloud and on-premises** — works with both Azure DevOps Services and Azure DevOps Server.
+**Filter** — type any part of a branch name to narrow the list instantly. Use `*` as a wildcard to match patterns (e.g. `feature/*` shows all your feature branches).
+
+**Sort** — click any column header to sort ascending or descending by branch name, repository, project, or last updated date.
+
+**Stale branch detection** — branches whose last commit is older than 30 days are highlighted in red, making it easy to identify work that may need attention or cleanup.
+
+**Accurate ownership** — a branch belongs to whoever pushed it into existence, not whoever made the most recent commit. Cherry-picks and rebases do not affect which branches appear in your list.
 
 ## How it works
 
-The extension uses your current session token to identify you. It queries the Git refs API and filters branches where the `creator` field matches your identity — no extra permissions or configuration required beyond the default `Code (read)` scope.
+The extension identifies you using your current Azure DevOps session — no additional sign-in or token is required. It queries the Git refs API (`Code (read)` scope only) and filters branches where the `creator` field matches your identity.
 
-## Where it appears
+## Compatibility
 
-| Location | What you see |
+| Environment | Supported |
 |---|---|
-| Organisation / collection start page | All your branches across all projects |
-| Repos → My Branches (inside a project) | Your branches within that project |
-
-## Getting started
-
-Install the extension from the marketplace and navigate to your organisation start page or to Repos inside any project. The **My Branches** tab will appear automatically.
-
-No configuration is needed.
+| Azure DevOps Services (cloud) | ✓ |
+| Azure DevOps Server (on-premises) | ✓ |
 
 ## Feedback and issues
 

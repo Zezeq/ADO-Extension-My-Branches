@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Keep this file up to date.** Whenever new functionality, design decisions, architectural patterns, or ways of working are introduced, update the relevant section or add a new one. This file is the shared source of truth for all developers and AI assistants working on this project.
+
+**Keep `overview.md` up to date.** This file is the marketplace listing that end users read before installing the extension. It must always reflect the current state of the extension's functionality. Any time a user-facing feature is added, changed, or removed — new columns, filter behaviour, stale threshold, hub locations, compatibility, etc. — `overview.md` must be updated in the same PR.
+
 ## Project Overview
 
 This is an Azure DevOps (ADO) extension named **My Branches** (package name: `my-branches`). It lets the logged-in user see all branches they created, using their session token as identity context. It targets both Azure DevOps Services (cloud) and Azure DevOps Server (on-prem) via `Microsoft.VisualStudio.Services` and `Microsoft.TeamFoundation.Server` in the manifest. Do not use `Microsoft.VisualStudio.Services.Integration` — that target is for third-party service integrations and requires a `getstarted` link.
@@ -40,12 +44,10 @@ The extension version is calculated automatically by the CI workflow — do not 
 
 ### Scheme
 
-```
-<major>.<minor>.<patch>
-```
-
-- **major.minor** — taken from the most recent git tag (e.g. `v1.2` or `1.2`). Tags must be in `X.Y` format.
-- **patch** — number of commits since that tag. If no tag exists, major.minor defaults to `0.1` and patch is the total commit count.
+- **major.minor** — taken from the most recent git tag (e.g. `v1.2` or `1.2`). Tags must be in `X.Y` format. Defaults to `0.1` if no tag exists.
+- **patch** — number of commits on `origin/main` since that tag.
+- **Main builds**: `major.minor.patch`
+- **PR builds**: `major.minor.patch.run_number` — the 4th segment guarantees each PR build is unique and always higher than the current main release, so it can be installed on top for testing. After the PR merges and main CI runs, the incremented patch makes the main build higher again.
 
 ### Bumping major or minor
 
@@ -56,7 +58,27 @@ git tag v1.0
 git push origin v1.0
 ```
 
-The next CI run will produce `1.0.<commits-since-tag>`.
+Pushing a tag triggers CI immediately and produces `1.0.0` (0 commits since tag).
+
+## Extension Variants
+
+Two extension variants are maintained from a single codebase:
+
+| Variant | Manifest | Extension ID | Public | Purpose |
+|---|---|---|---|---|
+| Production | `vss-extension.json` | `my-branches` | `true` | Marketplace release |
+| Dev | `vss-extension.dev.json` (override) | `my-branches-dev` | `false` | Verification installs |
+
+`vss-extension.dev.json` only overrides `id`, `name`, and `public` — all other fields come from `vss-extension.json`. Because the IDs differ, both variants can be installed simultaneously in the same ADO organisation.
+
+### CI artifacts
+
+- **Dev VSIX** (`my-branches-dev-<version>`) — built on every run (PRs and main). For installing and verifying before merging.
+- **Prod VSIX** (`my-branches-<version>`) — built on main and tag pushes only. For uploading to the marketplace.
+
+### Publishing
+
+Publishing is **manual**. Download the prod VSIX artifact from a main or tag CI run and upload it at `marketplace.visualstudio.com/manage`. There is no automated publish step in CI and no PAT secret is required.
 
 ## Asset Constraints
 
@@ -86,6 +108,7 @@ Write commit messages in the imperative mood — phrase the subject as a command
 - Capitalise the first word.
 - Do not end with a period.
 - Use the imperative mood: "Fix", "Add", "Remove", "Update", "Refactor" — not "Fixed", "Adding", or "Adds".
+- Do not include AI co-author attribution (`Co-Authored-By`) in any commit.
 
 ### Body
 
@@ -158,6 +181,7 @@ The vast majority of code must be covered by automated tests. Specifically:
 ```
 src/
   common/
+    BranchTable.tsx    # Shared React component — renders the full hub UI
     branchService.ts   # Pure business logic — ownership, sort, filter; fully unit-tested
     domUtils.ts        # DOM helpers — HTML escaping, row click handler attachment
     gitService.ts      # ADO Git API calls — fetches refs and maps them to BranchDetail
@@ -165,9 +189,9 @@ src/
     styles.css         # Shared styles for both hubs
     urlUtils.ts        # ADO URL builders for branch, repo branches, and project pages
   org-hub/
-    index.html / index.ts   # Entry point for the org/collection hub
+    index.html / index.tsx   # Entry point for the org/collection hub
   repos-hub/
-    index.html / index.ts   # Entry point for the repos hub
+    index.html / index.tsx   # Entry point for the repos hub
 tests/
   unit/
     branchService.test.ts
@@ -182,3 +206,56 @@ tests/
 - `branchService.ts` must remain free of runtime SDK/API imports so it can be unit-tested without mocking the ADO runtime. It may use `import type` from `gitService.ts` — type-only imports are erased at compile time and have no runtime effect.
 - New hubs are added by appending to the `hubs` array in `webpack.config.js` and registering a contribution in `vss-extension.json`.
 - Tests enforce a minimum **80% line coverage** threshold (`jest --coverage`).
+
+## UI and azure-devops-ui Patterns
+
+### Page layout
+
+The root wrapper of every hub must carry the `bolt-page` class and `Page.css` must be imported for page-level layout rules to apply:
+
+```tsx
+import 'azure-devops-ui/Components/Page/Page.css';
+
+<div className="bolt-page flex-grow flex-column">
+```
+
+The content area below the header uses:
+
+```tsx
+<div className="page-content page-content-top flex-grow flex-column">
+```
+
+- `page-content` gives 32px horizontal padding.
+- `page-content-top` gives 16px top padding (needed because `Page.css` forces `padding-bottom: 0` on `.bolt-page > .bolt-header`).
+
+### Header title with inline pill
+
+Wrap the text in a `<span>` so both siblings are elements — CSS `:not(:first-child)` is unreliable when the first sibling is a raw text node:
+
+```tsx
+<div className="flex-row flex-center rhythm-horizontal-8">
+  <span>My Branches</span>
+  <Pill ...>{count}</Pill>
+</div>
+```
+
+### Empty states
+
+Do not use `ZeroData` for filter no-results or genuinely empty lists. Without an `imagePath` or `iconProps` it renders a broken image 160px tall with `title-l` (1.75rem bold) text. Use a simple centred message instead:
+
+```tsx
+<div className="flex-grow flex-column flex-center justify-center secondary-text body-l">
+  {message}
+</div>
+```
+
+### Table column sizing
+
+Columns are sized to their content at render time using canvas text measurement. The helper `contentColumnWidth(header, values)` in `BranchTable.tsx`:
+
+- Measures all data values and the header label using `CanvasRenderingContext2D.measureText`.
+- Adds `COLUMN_EXTRA_WIDTH = 48px` to cover cell padding (24px) and header sort icon (~20px).
+- Returns an uncapped pixel width — no artificial maximum — so content is never truncated unless the viewport is genuinely too narrow.
+- Font used for measurement: `14px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif`.
+
+All cell links use class `mb-cell-link` (defined in `styles.css`) which sets `display: block`, `overflow: hidden`, `text-overflow: ellipsis`, and `white-space: nowrap`. Note that `ILinkProps` does not accept a `style` prop — use a CSS class for any display overrides.
