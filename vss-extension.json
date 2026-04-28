@@ -1,10 +1,10 @@
 {
   "manifestVersion": 1,
   "id": "my-branches",
-  "name": "My Branches",
+  "name": "Git Branch List",
   "version": "0.1.0",
   "publisher": "CrazySolutions",
-  "description": "Shows all branches created by the logged-in user across the organization and within each project's repositories.",
+  "description": "Lists branches you created across your organisation and within each project's repositories.",
   "public": true,
   "categories": ["Azure Repos"],
   "tags": ["git", "branches"],
@@ -43,7 +43,7 @@
     {
       "id": "org-hub",
       "type": "ms.vss-web.tab",
-      "description": "My Branches at the organization/collection level",
+      "description": "Git Branch List at the organization/collection level",
       "targets": ["ms.vss-tfs-web.suite-home-pivots"],
       "properties": {
         "name": "My Branches",
@@ -54,10 +54,10 @@
     {
       "id": "repos-hub",
       "type": "ms.vss-web.hub",
-      "description": "My Branches under Repos within a project",
+      "description": "Git Branch List under Repos within a project",
       "targets": ["ms.vss-code-web.code-hub-group"],
       "properties": {
-        "name": "My Branches",
+        "name": "Branch List",
         "order": 100,
         "uri": "dist/repos-hub/index.html",
         "icon": "images/hub-icon.png"

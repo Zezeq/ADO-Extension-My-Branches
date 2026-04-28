@@ -1,14 +1,14 @@
-# My Branches
+# Git Branch List
 
 Quickly find the branches you created — without scrolling through every branch in every repository.
 
 ## What you get
 
-After installing, two new **My Branches** tabs appear automatically in your Azure DevOps interface — no configuration required.
+After installing, two new tabs appear automatically in your Azure DevOps interface — no configuration required.
 
 ### Organisation / collection view
 
-A tab on your organisation or collection start page lists **all branches you created across every project and repository** you have access to. Each row shows:
+A **My Branches** tab on your organisation or collection start page lists **all branches you created across every project and repository** you have access to. Each row shows:
 
 - **Branch name** — links directly to the branch in Azure Repos.
 - **Repository** — links to the branch list for that repository.
@@ -17,7 +17,7 @@ A tab on your organisation or collection start page lists **all branches you cre
 
 ### Project / Repos view
 
-A tab under **Repos** inside each project shows the same information scoped to that project only — useful when you want to stay focused on the work at hand.
+A **Branch List** tab under **Repos** inside each project shows the same information scoped to that project only — useful when you want to stay focused on the work at hand.
 
 ## Features
 

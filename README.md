@@ -1,4 +1,4 @@
-# My Branches
+# Git Branch List
 
 An Azure DevOps extension that shows all branches you created — across your entire organisation or scoped to a single project — without scrolling through every branch in every repository.
 

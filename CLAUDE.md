@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Azure DevOps (ADO) extension named **My Branches** (package name: `my-branches`). It lets the logged-in user see all branches they created, using their session token as identity context. It targets both Azure DevOps Services (cloud) and Azure DevOps Server (on-prem) via `Microsoft.VisualStudio.Services` and `Microsoft.TeamFoundation.Server` in the manifest. Do not use `Microsoft.VisualStudio.Services.Integration` — that target is for third-party service integrations and requires a `getstarted` link.
+This is an Azure DevOps (ADO) extension named **Git Branch List** (package name: `my-branches`). It lets the logged-in user see all branches they created, using their session token as identity context. It targets both Azure DevOps Services (cloud) and Azure DevOps Server (on-prem) via `Microsoft.VisualStudio.Services` and `Microsoft.TeamFoundation.Server` in the manifest. Do not use `Microsoft.VisualStudio.Services.Integration` — that target is for third-party service integrations and requires a `getstarted` link.
 
 The extension contributes two hubs:
 
@@ -24,8 +24,6 @@ The publisher ID in `vss-extension.json` is **not a secret** — it is a public 
 ## Development Environment
 
 The project uses a Dev Container based on `mcr.microsoft.com/devcontainers/javascript-node:22`. Claude Code is installed globally inside the container via `npm install -g @anthropic-ai/claude-code`.
-
-An `ANTHROPIC_API_KEY` secret is expected in the environment (configured via the devcontainer secrets block).
 
 ## Commands
 
