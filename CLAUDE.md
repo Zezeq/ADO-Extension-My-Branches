@@ -84,7 +84,7 @@ Publishing is **manual**. Download the prod VSIX artifact from a main or tag CI 
 
 The `files` array in `vss-extension.json` includes the entire `images/` directory, so **every file placed there is bundled into the VSIX** — not just files referenced by the manifest. Never place an SVG anywhere inside `images/`.
 
-Always generate icons as PNG. The `images/hub-icon.png` and `images/logo.png` files are produced by the inline Node.js scripts in the git history — re-run those scripts if the source needs to change.
+Always generate icons as PNG. The `images/hub-icon.png` and `images/logo.png` files are produced by `scripts/generate-icons.js` — re-run it with `node scripts/generate-icons.js` if the design needs to change.
 
 ## Git Commit Messages
 
