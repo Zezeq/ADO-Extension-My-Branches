@@ -54,6 +54,22 @@ export function ErrorView({ message }: { message: string }): JSX.Element {
 
 const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
+// 48px covers header cell padding (22px) + sort icon (~20px) + margin of safety.
+const COLUMN_EXTRA_WIDTH = 48;
+const MAX_COLUMN_WIDTH = 300;
+
+function contentColumnWidth(header: string, values: string[], maxWidth = MAX_COLUMN_WIDTH): number {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return 120;
+  ctx.font = '14px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
+  const measure = (text: string): number => ctx.measureText(text).width;
+  const maxTextWidth = values.length > 0
+    ? Math.max(measure(header), ...values.map(measure))
+    : measure(header);
+  return Math.min(Math.ceil(maxTextWidth) + COLUMN_EXTRA_WIDTH, maxWidth);
+}
+
 export function BranchTable({ branches, collectionUri, showProjectColumn, onNavigate }: BranchTableProps): JSX.Element {
   const sortColumns: SortColumn[] = showProjectColumn
     ? ['name', 'repositoryName', 'projectName', 'lastCommitDate']
@@ -80,6 +96,25 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
   const sortColumn = sortColumns[sortColumnIndex];
   const now = useMemo(() => new Date(), []);
 
+  const branchWidth = useMemo(
+    () => contentColumnWidth('Branch', branches.map(b => b.name), 800),
+    [branches]
+  );
+  const repoWidth = useMemo(
+    () => contentColumnWidth('Repository', branches.map(b => b.repositoryName)),
+    [branches]
+  );
+  const projectWidth = useMemo(
+    () => contentColumnWidth('Project', branches.map(b => b.projectName)),
+    [branches]
+  );
+  const dateWidth = useMemo(
+    () => contentColumnWidth('Last updated', branches.map(b =>
+      b.lastCommitDate ? formatTimeAgo(b.lastCommitDate, now) : '—'
+    )),
+    [branches, now]
+  );
+
   const displayed = useMemo(
     () => sortBranches(filterBranches(branches, filter), sortColumn, sortDirection),
     [branches, filter, sortColumn, sortDirection]
@@ -95,11 +130,12 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
       {
         id: 'name',
         name: 'Branch',
-        width: -33,
+        width: branchWidth,
         sortProps: sortProps(0),
         renderCell: (rowIndex, columnIndex, tableColumn, item) => (
           <SimpleTableCell key={`name-${rowIndex}`} columnIndex={columnIndex} tableColumn={tableColumn}>
             <Link
+              className="mb-cell-link"
               href={branchUrl(collectionUri, item.projectName, item.repositoryName, item.name)}
               target="_top"
               onClick={stopPropagation}
@@ -113,11 +149,12 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
       {
         id: 'repositoryName',
         name: 'Repository',
-        width: showProjectColumn ? -25 : -35,
+        width: repoWidth,
         sortProps: sortProps(1),
         renderCell: (rowIndex, columnIndex, tableColumn, item) => (
           <SimpleTableCell key={`repo-${rowIndex}`} columnIndex={columnIndex} tableColumn={tableColumn}>
             <Link
+              className="mb-cell-link"
               href={repoBranchesUrl(collectionUri, item.projectName, item.repositoryName)}
               target="_top"
               onClick={stopPropagation}
@@ -134,11 +171,12 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
       cols.push({
         id: 'projectName',
         name: 'Project',
-        width: -22,
+        width: projectWidth,
         sortProps: sortProps(2),
         renderCell: (rowIndex, columnIndex, tableColumn, item) => (
           <SimpleTableCell key={`proj-${rowIndex}`} columnIndex={columnIndex} tableColumn={tableColumn}>
             <Link
+              className="mb-cell-link"
               href={projectUrl(collectionUri, item.projectName)}
               target="_top"
               onClick={stopPropagation}
@@ -155,11 +193,11 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
     cols.push({
       id: 'lastCommitDate',
       name: 'Last updated',
-      width: showProjectColumn ? -20 : -32,
+      width: dateWidth,
       sortProps: sortProps(dateIdx),
       renderCell: (rowIndex, columnIndex, tableColumn, item) => (
         <SimpleTableCell key={`date-${rowIndex}`} columnIndex={columnIndex} tableColumn={tableColumn}>
-          <span className={isStale(item.lastCommitDate, now) ? 'mb-stale' : ''}>
+          <span className={`text-ellipsis${isStale(item.lastCommitDate, now) ? ' mb-stale' : ''}`}>
             {item.lastCommitDate ? formatTimeAgo(item.lastCommitDate, now) : '—'}
           </span>
         </SimpleTableCell>
@@ -167,7 +205,7 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
     });
 
     return cols;
-  }, [sortColumnIndex, sortOrder, showProjectColumn, collectionUri, sortColumns, now]);
+  }, [sortColumnIndex, sortOrder, showProjectColumn, collectionUri, sortColumns, now, branchWidth, repoWidth, projectWidth, dateWidth]);
 
   const countLabel =
     displayed.length === branches.length

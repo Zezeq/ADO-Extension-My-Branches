@@ -1,3 +1,10 @@
 .mb-stale {
   color: #a4262c;
 }
+
+.mb-cell-link {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
