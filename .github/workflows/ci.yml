@@ -55,10 +55,24 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Package
+      - name: Package dev extension
+        run: |
+          npx tfx extension create --manifest-globs vss-extension.json --overrides-file vss-extension.dev.json --no-prompt
+          mkdir dev && mv *.vsix dev/
+
+      - name: Upload dev artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: my-branches-dev-${{ env.VERSION }}
+          path: 'dev/*.vsix'
+          if-no-files-found: error
+
+      - name: Package prod extension
+        if: github.event_name != 'pull_request'
         run: npx tfx extension create --manifest-globs vss-extension.json --no-prompt
 
-      - name: Upload artifact
+      - name: Upload prod artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: my-branches-${{ env.VERSION }}

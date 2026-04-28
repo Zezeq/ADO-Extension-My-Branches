@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "publisher": "CrazySolutions",
   "description": "Shows all branches created by the logged-in user across the organization and within each project's repositories.",
-  "public": false,
+  "public": true,
   "categories": ["Azure Repos"],
   "tags": ["git", "branches"],
   "demands": ["api-version/5.1"],
