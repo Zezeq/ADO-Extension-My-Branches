@@ -42,4 +42,4 @@ The extension identifies you using your current Azure DevOps session — no addi
 
 ## Feedback and issues
 
-Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/Zezeq/ADO-Extension-My-Branches/issues).
+Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/CrazySolutions/ADO-Extension-My-Branches/issues).

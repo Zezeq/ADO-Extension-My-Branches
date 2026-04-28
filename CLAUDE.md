@@ -183,11 +183,11 @@ src/
   common/
     BranchTable.tsx    # Shared React component — renders the full hub UI
     branchService.ts   # Pure business logic — ownership, sort, filter; fully unit-tested
-    domUtils.ts        # DOM helpers — HTML escaping, row click handler attachment
     gitService.ts      # ADO Git API calls — fetches refs and maps them to BranchDetail
     sdkClient.ts       # SDK init + API client factory (thin wiring layer)
     styles.css         # Shared styles for both hubs
     urlUtils.ts        # ADO URL builders for branch, repo branches, and project pages
+  declarations.d.ts    # Module declarations (e.g. CSS imports)
   org-hub/
     index.html / index.tsx   # Entry point for the org/collection hub
   repos-hub/

@@ -18,7 +18,7 @@ An Azure DevOps extension that shows all branches you created — across your en
 ## Getting started
 
 ```bash
-git clone https://github.com/Zezeq/ADO-Extension-My-Branches.git
+git clone https://github.com/CrazySolutions/ADO-Extension-My-Branches.git
 cd ADO-Extension-My-Branches
 npm ci
 ```
@@ -98,6 +98,7 @@ src/
     sdkClient.ts       # SDK init and API client factory
     urlUtils.ts        # ADO URL builders
     styles.css         # Shared styles
+  declarations.d.ts    # Module declarations (e.g. CSS imports)
   org-hub/             # Organisation/collection hub entry point
   repos-hub/           # Project Repos hub entry point
 tests/
@@ -110,7 +111,7 @@ See [CLAUDE.md](CLAUDE.md) for architecture decisions, coding standards, commit 
 
 ## Feedback and issues
 
-Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/Zezeq/ADO-Extension-My-Branches/issues).
+Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/CrazySolutions/ADO-Extension-My-Branches/issues).
 
 ## License
 
