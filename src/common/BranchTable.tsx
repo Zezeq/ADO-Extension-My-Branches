@@ -10,7 +10,6 @@ import { MessageCard, MessageCardSeverity } from 'azure-devops-ui/MessageCard';
 import { Pill, PillSize, PillVariant } from 'azure-devops-ui/Pill';
 import { Spinner, SpinnerSize } from 'azure-devops-ui/Spinner';
 import { TextField } from 'azure-devops-ui/TextField';
-import { ZeroData } from 'azure-devops-ui/ZeroData';
 
 import 'azure-devops-ui/Core/override.css';
 import 'azure-devops-ui/Core/core.css';
@@ -23,7 +22,6 @@ import 'azure-devops-ui/Components/Pill/Pill.css';
 import 'azure-devops-ui/Components/Spinner/Spinner.css';
 import 'azure-devops-ui/Components/Table/Table.css';
 import 'azure-devops-ui/Components/TextField/TextField.css';
-import 'azure-devops-ui/Components/ZeroData/ZeroData.css';
 import './styles.css';
 
 import type { BranchDetail } from './gitService';
@@ -198,13 +196,9 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
         />
         <Card className="flex-grow bolt-table-card" contentProps={{ contentPadding: false }}>
           {displayed.length === 0 ? (
-            <ZeroData
-              primaryText={
-                filter ? `No branches match "${filter}"` : 'You have no branches.'
-              }
-              imageAltText="No branches"
-              className="flex-grow"
-            />
+            <div className="flex-grow flex-column flex-center justify-center secondary-text body-l">
+              {filter ? `No branches match "${filter}"` : 'You have no branches.'}
+            </div>
           ) : (
             <Table<BranchDetail>
               behaviors={[sorting.current]}
