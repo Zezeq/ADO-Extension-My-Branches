@@ -179,13 +179,16 @@ The vast majority of code must be covered by automated tests. Specifically:
 ```
 src/
   common/
-    BranchTable.tsx    # Shared React component — renders the full hub UI
-    branchService.ts   # Pure business logic — ownership, sort, filter; fully unit-tested
-    gitService.ts      # ADO Git API calls — fetches refs and maps them to BranchDetail
-    sdkClient.ts       # SDK init + API client factory (thin wiring layer)
-    styles.css         # Shared styles for both hubs
-    urlUtils.ts        # ADO URL builders for branch, repo branches, and project pages
-  declarations.d.ts    # Module declarations (e.g. CSS imports)
+    BranchTable.tsx      # Shared React component — renders the full hub UI
+    branchService.ts     # Pure business logic — ownership, sort, filter, exclusions; fully unit-tested
+    gitService.ts        # ADO Git API calls — fetches refs and maps them to BranchDetail
+    sdkClient.ts         # SDK init + API client factory (thin wiring layer)
+    settingsService.ts   # ADO extension data load/save (user-scoped); SDK I/O isolated here
+    settingsTypes.ts     # BranchSettings interface + DEFAULT_BRANCH_SETTINGS constant (no imports)
+    SettingsPanel.tsx    # Settings panel component — exclusion pattern list, add/remove, save
+    styles.css           # Shared styles for both hubs
+    urlUtils.ts          # ADO URL builders for branch, repo branches, and project pages
+  declarations.d.ts      # Module declarations (e.g. CSS imports)
   org-hub/
     index.html / index.tsx   # Entry point for the org/collection hub
   repos-hub/
@@ -194,16 +197,32 @@ tests/
   unit/
     branchService.test.ts
     gitService.test.ts
+    settingsService.test.ts
+    SettingsPanel.test.tsx
     urlUtils.test.ts
   __mocks__/
+    azure-devops-extension-sdk.js   # Stub — SDK uses AMD define() which fails in jsdom
+    azure-devops-ui.js              # Stub — azure-devops-ui ships ESM which Jest cannot transform
     styleMock.js
 ```
 
 ### Key design rules
 
 - `branchService.ts` must remain free of runtime SDK/API imports so it can be unit-tested without mocking the ADO runtime. It may use `import type` from `gitService.ts` — type-only imports are erased at compile time and have no runtime effect.
+- `settingsService.ts` is the only module that imports from `azure-devops-extension-sdk` or `azure-devops-extension-api` for settings I/O. Hub entry points use it to load and save settings; `BranchTable.tsx` and below must not import it directly.
+- `settingsTypes.ts` has no imports. Keep it that way — it is used by both the SDK-aware `settingsService.ts` and the SDK-free `branchService.ts` layer.
 - New hubs are added by appending to the `hubs` array in `webpack.config.js` and registering a contribution in `vss-extension.json`.
 - Tests enforce a minimum **80% line coverage** threshold (`jest --coverage`).
+- `azure-devops-extension-sdk` and `azure-devops-ui` are mapped to manual stubs in `jest.config.js` via `moduleNameMapper`. Add any new azure-devops-ui components used in tested files to `tests/__mocks__/azure-devops-ui.js`.
+
+### Settings storage
+
+User settings are stored via `IExtensionDataManager` from `azure-devops-extension-api/Common/CommonServices`, obtained through `IExtensionDataService` (service ID `CommonServiceIds.ExtensionDataService`).
+
+- **Scope**: `{ scopeType: 'User', scopeValue: 'me' }` — personal to the logged-in user, portable across browsers.
+- **Key**: `'branchExclusionSettings'`
+- **Shape**: `BranchSettings` (see `settingsTypes.ts`) — currently `{ exclusionPatterns: string[] }`.
+- The manager is created once during hub `load()` in parallel with the branch fetch, stored in `ViewState`, and passed down as a prop so `onSettingsChange` can persist without a new SDK call on every save.
 
 ## UI and azure-devops-ui Patterns
 
@@ -237,12 +256,16 @@ Wrap the text in a `<span>` so both siblings are elements — CSS `:not(:first-c
 </div>
 ```
 
+### Page scroll and flex chain
+
+For the table to scroll correctly, `html` and `body` must have `height: 100%` and `#app` must be a flex column — this anchors the flex chain to the viewport so `flex-grow` on child containers has a bounded ancestor to grow into. These rules live in `styles.css`. Without them the azure-devops-ui Table's virtual scroll container cannot determine its height and only renders a handful of rows.
+
 ### Empty states
 
-Do not use `ZeroData` for filter no-results or genuinely empty lists. Without an `imagePath` or `iconProps` it renders a broken image 160px tall with `title-l` (1.75rem bold) text. Use a simple centred message instead:
+Do not use `ZeroData` for filter no-results or genuinely empty lists. Without an `imagePath` or `iconProps` it renders a broken image 160px tall with `title-l` (1.75rem bold) text. Use a simple padded message instead:
 
 ```tsx
-<div className="flex-grow flex-column flex-center justify-center secondary-text body-l">
+<div className="secondary-text body-m padding-16">
   {message}
 </div>
 ```

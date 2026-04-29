@@ -25,6 +25,8 @@ A **Branch List** tab under **Repos** inside each project shows the same informa
 
 **Sort** — click any column header to sort ascending or descending by branch name, repository, project, or last updated date.
 
+**Exclusion settings** — open Settings (gear icon in the top-right) to define a personal list of branch name patterns to permanently hide from the list. Patterns are case-insensitive and support `*` as a wildcard (e.g. `dependabot/*`, `release/*`). Settings are stored per user and persist across sessions and devices. When exclusions are active, an info banner shows how many branches are hidden and provides a direct link back to settings — so you never wonder why your count looks low.
+
 **Stale branch detection** — branches whose last commit is older than 30 days are highlighted in red, making it easy to identify work that may need attention or cleanup.
 
 **Accurate ownership** — a branch belongs to whoever pushed it into existence, not whoever made the most recent commit. Cherry-picks and rebases do not affect which branches appear in your list.
