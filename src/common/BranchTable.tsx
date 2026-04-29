@@ -120,9 +120,15 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
     [branches, now]
   );
 
+  const afterExclusions = useMemo(
+    () => applyExclusionPatterns(branches, exclusionPatterns),
+    [branches, exclusionPatterns]
+  );
+  const excludedCount = branches.length - afterExclusions.length;
+
   const displayed = useMemo(
-    () => sortBranches(filterBranches(applyExclusionPatterns(branches, exclusionPatterns), filter), sortColumn, sortDirection),
-    [branches, exclusionPatterns, filter, sortColumn, sortDirection]
+    () => sortBranches(filterBranches(afterExclusions, filter), sortColumn, sortDirection),
+    [afterExclusions, filter, sortColumn, sortDirection]
   );
   const itemProvider = useMemo(() => new ArrayItemProvider(displayed), [displayed]);
 
@@ -252,6 +258,17 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
         />
       )}
       <div className="page-content page-content-top flex-grow flex-column">
+        {excludedCount > 0 && (
+          <MessageCard
+            className="margin-bottom-16"
+            severity={MessageCardSeverity.Info}
+            buttonProps={[{ text: 'Manage settings', onClick: () => setSettingsPanelOpen(true) }]}
+          >
+            {excludedCount === 1
+              ? '1 branch is hidden by your exclusion settings.'
+              : `${excludedCount} branches are hidden by your exclusion settings.`}
+          </MessageCard>
+        )}
         <TextField
           className="margin-bottom-16"
           value={filter}

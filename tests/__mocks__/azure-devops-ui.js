@@ -63,7 +63,7 @@ module.exports = {
   PillSize: { compact: 'compact' },
   PillVariant: { outlined: 'outlined' },
   SpinnerSize: { large: 'large' },
-  MessageCardSeverity: { Error: 'error' },
+  MessageCardSeverity: { Info: 'Info', Warning: 'Warning', Error: 'Error' },
   SortOrder: { ascending: 0, descending: 1 },
   ColumnSorting: function(fn) { this.fn = fn; },
 };
