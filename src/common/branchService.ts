@@ -64,14 +64,22 @@ export function sortBranches(
   });
 }
 
-export function filterBranches(branches: BranchDetail[], pattern: string): BranchDetail[] {
-  if (!pattern.trim()) return branches;
+function matchesPattern(name: string, pattern: string): boolean {
   const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
   const regexStr = pattern.includes('*')
     ? `^${escaped.replace(/\*/g, '.*')}$`
     : escaped;
-  const regex = new RegExp(regexStr, 'i');
-  return branches.filter(b => regex.test(b.name));
+  return new RegExp(regexStr, 'i').test(name);
+}
+
+export function filterBranches(branches: BranchDetail[], pattern: string): BranchDetail[] {
+  if (!pattern.trim()) return branches;
+  return branches.filter(b => matchesPattern(b.name, pattern));
+}
+
+export function applyExclusionPatterns(branches: BranchDetail[], exclusionPatterns: string[]): BranchDetail[] {
+  if (exclusionPatterns.length === 0) return branches;
+  return branches.filter(b => !exclusionPatterns.some(p => matchesPattern(b.name, p)));
 }
 
 export function filterUserBranches(
