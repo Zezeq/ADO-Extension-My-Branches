@@ -8,11 +8,5 @@
         "github.copilot"
       ]
     }
-  },
-  "secrets": {
-    "ANTHROPIC_API_KEY": {
-      "description": "Your Anthropic API key",
-      "documentationUrl": "https://console.anthropic.com"
-    }
   }
 }
