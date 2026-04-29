@@ -1,6 +1,7 @@
 import {
   filterUserBranches,
   filterBranches,
+  applyExclusionPatterns,
   isBranchOwnedByUser,
   toBranchInfo,
   shortBranchName,
@@ -259,6 +260,57 @@ describe('sortBranches', () => {
   it('does not mutate the original array', () => {
     const original = [...branches];
     sortBranches(branches, 'name', 'desc');
+    expect(branches).toEqual(original);
+  });
+});
+
+describe('applyExclusionPatterns', () => {
+  const branches: BranchDetail[] = [
+    makeDetail('main', 'repo', 'proj'),
+    makeDetail('feature/login', 'repo', 'proj'),
+    makeDetail('dependabot/npm/lodash', 'repo', 'proj'),
+    makeDetail('dependabot/pip/requests', 'repo', 'proj'),
+    makeDetail('hotfix/crash', 'repo', 'proj'),
+  ];
+
+  it('returns all branches when exclusionPatterns is empty', () => {
+    expect(applyExclusionPatterns(branches, [])).toHaveLength(5);
+  });
+
+  it('excludes a branch by exact match', () => {
+    const result = applyExclusionPatterns(branches, ['main']);
+    expect(result.map(b => b.name)).not.toContain('main');
+    expect(result).toHaveLength(4);
+  });
+
+  it('excludes branches via wildcard pattern', () => {
+    const result = applyExclusionPatterns(branches, ['dependabot/*']);
+    expect(result.map(b => b.name)).toEqual(['main', 'feature/login', 'hotfix/crash']);
+  });
+
+  it('is case-insensitive', () => {
+    const result = applyExclusionPatterns(branches, ['MAIN']);
+    expect(result.map(b => b.name)).not.toContain('main');
+  });
+
+  it('applies multiple patterns — a branch matching any one is excluded', () => {
+    const result = applyExclusionPatterns(branches, ['main', 'hotfix/*']);
+    expect(result.map(b => b.name)).toEqual(['feature/login', 'dependabot/npm/lodash', 'dependabot/pip/requests']);
+  });
+
+  it('retains a branch that matches no pattern', () => {
+    const result = applyExclusionPatterns(branches, ['release/*']);
+    expect(result).toHaveLength(5);
+  });
+
+  it('returns an empty array when all branches are excluded', () => {
+    const result = applyExclusionPatterns(branches, ['*']);
+    expect(result).toHaveLength(0);
+  });
+
+  it('does not mutate the input array', () => {
+    const original = [...branches];
+    applyExclusionPatterns(branches, ['main']);
     expect(branches).toEqual(original);
   });
 });

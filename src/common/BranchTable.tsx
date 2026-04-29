@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useMemo, useRef } from 'react';
 import { Table, SimpleTableCell, ColumnSorting, SortOrder } from 'azure-devops-ui/Table';
 import type { ITableColumn } from 'azure-devops-ui/Table';
+import type { IHeaderCommandBarItem } from 'azure-devops-ui/HeaderCommandBar';
 import { ArrayItemProvider } from 'azure-devops-ui/Utilities/Provider';
 import { Card } from 'azure-devops-ui/Card';
 import { Header, TitleSize } from 'azure-devops-ui/Header';
@@ -15,6 +16,7 @@ import 'azure-devops-ui/Core/override.css';
 import 'azure-devops-ui/Core/core.css';
 import 'azure-devops-ui/Components/Card/Card.css';
 import 'azure-devops-ui/Components/Header/Header.css';
+import 'azure-devops-ui/Components/HeaderCommandBar/HeaderCommandBar.css';
 import 'azure-devops-ui/Components/Page/Page.css';
 import 'azure-devops-ui/Components/Link/Link.css';
 import 'azure-devops-ui/Components/MessageCard/MessageCard.css';
@@ -25,15 +27,18 @@ import 'azure-devops-ui/Components/TextField/TextField.css';
 import './styles.css';
 
 import type { BranchDetail } from './gitService';
-import { filterBranches, formatTimeAgo, isStale, sortBranches } from './branchService';
+import { applyExclusionPatterns, filterBranches, formatTimeAgo, isStale, sortBranches } from './branchService';
 import type { SortColumn } from './branchService';
+import { SettingsPanel } from './SettingsPanel';
 import { branchUrl, projectUrl, repoBranchesUrl } from './urlUtils';
 
 export interface BranchTableProps {
   branches: BranchDetail[];
   collectionUri: string;
   showProjectColumn: boolean;
+  exclusionPatterns: string[];
   onNavigate: (url: string) => void;
+  onSettingsChange: (patterns: string[]) => Promise<void>;
 }
 
 export function LoadingView(): JSX.Element {
@@ -69,7 +74,7 @@ function contentColumnWidth(header: string, values: string[]): number {
   return Math.ceil(maxTextWidth) + COLUMN_EXTRA_WIDTH;
 }
 
-export function BranchTable({ branches, collectionUri, showProjectColumn, onNavigate }: BranchTableProps): JSX.Element {
+export function BranchTable({ branches, collectionUri, showProjectColumn, exclusionPatterns, onNavigate, onSettingsChange }: BranchTableProps): JSX.Element {
   const sortColumns: SortColumn[] = showProjectColumn
     ? ['name', 'repositoryName', 'projectName', 'lastCommitDate']
     : ['name', 'repositoryName', 'lastCommitDate'];
@@ -78,6 +83,7 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
   const [filter, setFilter] = useState('');
   const [sortColumnIndex, setSortColumnIndex] = useState(defaultSortIndex);
   const [sortOrder, setSortOrder] = useState(SortOrder.ascending);
+  const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
 
   // Stable ref delegate so ColumnSorting (created once) always calls the latest handler.
   const onSortRef = useRef<(columnIndex: number, order: SortOrder) => void>(() => {});
@@ -115,8 +121,8 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
   );
 
   const displayed = useMemo(
-    () => sortBranches(filterBranches(branches, filter), sortColumn, sortDirection),
-    [branches, filter, sortColumn, sortDirection]
+    () => sortBranches(filterBranches(applyExclusionPatterns(branches, exclusionPatterns), filter), sortColumn, sortDirection),
+    [branches, exclusionPatterns, filter, sortColumn, sortDirection]
   );
   const itemProvider = useMemo(() => new ArrayItemProvider(displayed), [displayed]);
 
@@ -211,6 +217,16 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
       ? String(branches.length)
       : `${displayed.length} of ${branches.length}`;
 
+  const commandBarItems: IHeaderCommandBarItem[] = [
+    {
+      id: 'settings',
+      ariaLabel: 'Settings',
+      iconProps: { iconName: 'Settings' },
+      important: true,
+      onActivate: () => setSettingsPanelOpen(true),
+    },
+  ];
+
   return (
     <div className="bolt-page flex-grow flex-column">
       <Header
@@ -223,7 +239,18 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, onNavi
           </div>
         }
         titleSize={TitleSize.Large}
+        commandBarItems={commandBarItems}
       />
+      {settingsPanelOpen && (
+        <SettingsPanel
+          exclusionPatterns={exclusionPatterns}
+          onSave={async patterns => {
+            await onSettingsChange(patterns);
+            setSettingsPanelOpen(false);
+          }}
+          onDismiss={() => setSettingsPanelOpen(false)}
+        />
+      )}
       <div className="page-content page-content-top flex-grow flex-column">
         <TextField
           className="margin-bottom-16"
