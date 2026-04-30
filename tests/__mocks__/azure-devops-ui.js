@@ -48,6 +48,8 @@ const Card = ({ children, className, contentProps }) =>
   React.createElement('div', { className },
     React.createElement('div', { className: contentProps?.className }, children)
   );
+const Icon = ({ iconName, className }) =>
+  React.createElement('span', { className, 'data-icon': iconName });
 const Link = ({ children, href, className, onClick }) =>
   React.createElement('a', { href, className, onClick }, children);
 const Table = ({ columns, itemProvider, behaviors, scrollable, onActivate }) =>
@@ -57,7 +59,7 @@ const ArrayItemProvider = function(items) { this.items = items; };
 
 module.exports = {
   Button, TextField, Panel, PanelContent, PanelFooter,
-  Header, Pill, Spinner, MessageCard, Card, Link,
+  Header, Icon, Pill, Spinner, MessageCard, Card, Link,
   Table, SimpleTableCell, ArrayItemProvider,
   TitleSize: { Large: 'large', Medium: 'medium' },
   PillSize: { compact: 'compact' },
