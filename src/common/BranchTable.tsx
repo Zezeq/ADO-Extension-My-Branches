@@ -6,6 +6,7 @@ import type { IHeaderCommandBarItem } from 'azure-devops-ui/HeaderCommandBar';
 import { ArrayItemProvider } from 'azure-devops-ui/Utilities/Provider';
 import { Card } from 'azure-devops-ui/Card';
 import { Header, TitleSize } from 'azure-devops-ui/Header';
+import { Icon } from 'azure-devops-ui/Icon';
 import { Link } from 'azure-devops-ui/Link';
 import { MessageCard, MessageCardSeverity } from 'azure-devops-ui/MessageCard';
 import { Pill, PillSize, PillVariant } from 'azure-devops-ui/Pill';
@@ -18,6 +19,7 @@ import 'azure-devops-ui/Components/Card/Card.css';
 import 'azure-devops-ui/Components/Header/Header.css';
 import 'azure-devops-ui/Components/HeaderCommandBar/HeaderCommandBar.css';
 import 'azure-devops-ui/Components/Page/Page.css';
+import 'azure-devops-ui/Components/Icon/FluentIcons.css';
 import 'azure-devops-ui/Components/Link/Link.css';
 import 'azure-devops-ui/Components/MessageCard/MessageCard.css';
 import 'azure-devops-ui/Components/Pill/Pill.css';
@@ -43,7 +45,7 @@ export interface BranchTableProps {
 
 export function LoadingView(): JSX.Element {
   return (
-    <div className="flex-grow flex-column flex-center justify-center">
+    <div className="flex-grow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <Spinner label="Loading your branches…" size={SpinnerSize.large} />
     </div>
   );
@@ -101,10 +103,6 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
   const sortColumn = sortColumns[sortColumnIndex];
   const now = useMemo(() => new Date(), []);
 
-  const branchWidth = useMemo(
-    () => contentColumnWidth('Branch', branches.map(b => b.name)),
-    [branches]
-  );
   const repoWidth = useMemo(
     () => contentColumnWidth('Repository', branches.map(b => b.repositoryName)),
     [branches]
@@ -141,19 +139,14 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
       {
         id: 'name',
         name: 'Branch',
-        width: branchWidth,
+        width: -1,
         sortProps: sortProps(0),
         renderCell: (rowIndex, columnIndex, tableColumn, item) => (
           <SimpleTableCell key={`name-${rowIndex}`} columnIndex={columnIndex} tableColumn={tableColumn}>
-            <Link
-              className="mb-cell-link"
-              href={branchUrl(collectionUri, item.projectName, item.repositoryName, item.name)}
-              target="_top"
-              onClick={stopPropagation}
-              subtle={false}
-            >
-              {item.name}
-            </Link>
+            <div className="flex-row flex-center">
+              <Icon iconName="BranchMerge" className="flex-noshrink margin-right-4" />
+              <span className="mb-cell-link flex-grow">{item.name}</span>
+            </div>
           </SimpleTableCell>
         ),
       },
@@ -216,7 +209,7 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
     });
 
     return cols;
-  }, [sortColumnIndex, sortOrder, showProjectColumn, collectionUri, sortColumns, now, branchWidth, repoWidth, projectWidth, dateWidth]);
+  }, [sortColumnIndex, sortOrder, showProjectColumn, collectionUri, sortColumns, now, repoWidth, projectWidth, dateWidth]);
 
   const countLabel =
     displayed.length === branches.length
@@ -234,7 +227,7 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
   ];
 
   return (
-    <div className="bolt-page flex-grow flex-column">
+    <div className="bolt-page bolt-page-grey flex-grow flex-column">
       <Header
         title={
           <div className="flex-row flex-center rhythm-horizontal-8">
@@ -270,12 +263,13 @@ export function BranchTable({ branches, collectionUri, showProjectColumn, exclus
           </MessageCard>
         )}
         <TextField
-          className="margin-bottom-16"
+          containerClassName="mb-filter-field margin-bottom-16"
           value={filter}
           onChange={(_, value) => setFilter(value ?? '')}
           placeholder="Filter branches… (* = wildcard)"
+          prefixIconProps={{ iconName: 'Filter' }}
         />
-        <Card className="flex-column bolt-table-card" contentProps={{ contentPadding: false, className: 'flex-grow flex-column scroll-hidden' }}>
+        <Card className="flex-column bolt-table-card bolt-card-white" contentProps={{ contentPadding: false, className: 'flex-grow flex-column scroll-hidden' }}>
           {displayed.length === 0 ? (
             <div className="secondary-text body-m padding-16">
               {filter ? `No branches match "${filter}"` : 'You have no branches.'}
